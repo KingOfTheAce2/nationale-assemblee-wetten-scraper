@@ -1,0 +1,30 @@
+# .github/workflows/scrape_to_hf.yml
+name: Scrape Nationale Assemblee PDFs → HF
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+
+jobs:
+  scrape-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Nationale Assemblee scraper
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python nationale_assemblee_scraper_to_hf.py

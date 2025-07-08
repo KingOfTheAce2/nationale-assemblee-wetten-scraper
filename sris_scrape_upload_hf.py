@@ -9,6 +9,21 @@ from pdfminer.high_level import extract_text as pdfminer_extract_text
 from datasets import Dataset
 from huggingface_hub import HfApi
 
+# Use a persistent session with a browser-like user agent to avoid 406 errors
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/118.0 Safari/537.36"
+    ),
+    "Accept": (
+        "text/html,application/xhtml+xml,application/xml;"
+        "q=0.9,*/*;q=0.8"
+    ),
+}
+
+session = requests.Session()
+session.headers.update(HEADERS)
+
 # Target URLs from SRIS
 URLS = [
     "https://www.sris.sr/administratief-recht/",
@@ -73,7 +88,7 @@ def download_and_extract(url: str) -> None:
     else:
         print(f"Downloading: {url}")
         try:
-            response = requests.get(url)
+            response = session.get(url)
             response.raise_for_status()
         except Exception as e:
             print(f"Failed to download {url}: {e}")
@@ -101,7 +116,7 @@ def scrape(url: str) -> None:
     visited_urls.add(url)
     print(f"Visiting: {url}")
     try:
-        response = requests.get(url)
+        response = session.get(url)
         response.raise_for_status()
     except Exception as e:
         print(f"Failed to fetch {url}: {e}")

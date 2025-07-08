@@ -49,8 +49,12 @@ def download_and_extract(pdf_url: str) -> None:
     if os.path.exists(filepath):
         print(f"Skipping already downloaded: {filename}")
     else:
-        resp = requests.get(pdf_url)
-        resp.raise_for_status()
+        try:
+            resp = requests.get(pdf_url)
+            resp.raise_for_status()
+        except requests.RequestException as e:
+            print(f"Failed to download {pdf_url}: {e}")
+            return
         with open(filepath, 'wb') as f:
             f.write(resp.content)
         print(f"Downloaded: {filename}")
@@ -72,7 +76,12 @@ def scrape(url: str) -> None:
         return
     visited_urls.add(url)
     print(f"Visiting: {url}")
-    resp = requests.get(url); resp.raise_for_status()
+    try:
+        resp = requests.get(url)
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Failed to access {url}: {e}")
+        return
     soup = BeautifulSoup(resp.text, 'html.parser')
     for a in soup.find_all('a', href=True):
         href = a['href']

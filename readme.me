@@ -4,7 +4,7 @@ This repository provides small Python scripts to download Surinamese legislation
 
 ## Overview
 
-- `nationale_assemblee_scraper_to_hf.py` crawls the Surinamese National Assembly website, collects PDF files, converts them to plain text with `pdftotext` and uploads the resulting dataset to Hugging Face.
+- `nationale_assemblee_scraper_to_hf.py` downloads legislation PDFs from the Suriname Rechtsinstituut (SRIS), converts them to plain text with `pdftotext` and uploads the resulting dataset to Hugging Face.
 - `sru_scraper.py` recursively downloads PDFs from the same site without uploading.
 - `sris_scraper.py` downloads legislation PDFs from the Suriname Rechtsinstituut for several legal categories.
 - `upload_to_drive.py` uploads a zipped folder of PDFs to Google Drive using PyDrive.

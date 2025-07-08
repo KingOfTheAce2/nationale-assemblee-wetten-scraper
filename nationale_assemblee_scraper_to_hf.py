@@ -10,7 +10,17 @@ from datasets import Dataset
 from huggingface_hub import HfApi
 
 # Configuration
-BASE_URL = "https://www.dna.sr/wetgeving/surinaamse-wetten/"
+# Target URLs from SRIS
+URLS = [
+    "https://www.sris.sr/administratief-recht/",
+    "https://www.sris.sr/burgerlijk-recht/",
+    "https://www.sris.sr/burgerlijk-procesrecht/",
+    "https://www.sris.sr/staatsrecht/",
+    "https://www.sris.sr/strafrecht/",
+    "https://www.sris.sr/strafprocesrecht/",
+    "https://www.sris.sr/wettenarchief/",
+]
+BASE_DOMAIN = urlparse(URLS[0]).netloc
 OUTPUT_DIR = "downloaded_pdfs"
 HF_REPO_ID = "vGassen/Surinam-Dutch-Legislation"
 SOURCE_NAME = "Nationale Assemblee Suriname"
@@ -28,7 +38,7 @@ def is_valid_pdf_link(href: str) -> bool:
 
 def is_internal_link(href: str) -> bool:
     parsed = urlparse(href)
-    return not parsed.netloc or parsed.netloc == urlparse(BASE_URL).netloc
+    return not parsed.netloc or parsed.netloc == BASE_DOMAIN
 
 
 def convert_pdf_to_text(pdf_bytes: bytes) -> str:
@@ -117,7 +127,7 @@ def scrape(url: str) -> None:
         full = urljoin(url, href)
         if is_valid_pdf_link(full):
             download_and_extract(full)
-        elif is_internal_link(href) and BASE_URL in full:
+        elif is_internal_link(full):
             scrape(full)
 
 
@@ -139,5 +149,6 @@ def push_to_hf(docs_list: list, repo_id: str) -> None:
 
 
 if __name__ == '__main__':
-    scrape(BASE_URL)
+    for start_url in URLS:
+        scrape(start_url)
     push_to_hf(docs, HF_REPO_ID)

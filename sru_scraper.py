@@ -13,7 +13,11 @@ def is_valid_pdf_link(href):
     return href and href.lower().endswith(".pdf")
 
 def is_internal_link(href):
-    return href and not urlparse(href).netloc or urlparse(href).netloc == urlparse(BASE_URL).netloc
+    """Return True if href links to the same domain or is relative."""
+    return href and (
+        (not urlparse(href).netloc)
+        or urlparse(href).netloc == urlparse(BASE_URL).netloc
+    )
 
 def scrape_page_for_links(url):
     if url in visited_urls:

@@ -2,8 +2,18 @@
 name: Scrape Nationale Assemblee PDFs → HF
 
 on:
-  # Manual trigger
+  # Manual trigger with optional script choice
   workflow_dispatch:
+    inputs:
+      script:
+        description: "Python script to run"
+        required: true
+        default: "nationale_assemblee_scraper_to_hf.py"
+        type: choice
+        options:
+          - nationale_assemblee_scraper_to_hf.py
+          - sru_scraper.py
+          - "SRIS scraper.py"
 
 jobs:
   scrape-and-upload:
@@ -28,8 +38,8 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Nationale Assemblee scraper
+      - name: Run selected scraper
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          python nationale_assemblee_scraper_to_hf.py
+          python "${{ inputs.script }}"

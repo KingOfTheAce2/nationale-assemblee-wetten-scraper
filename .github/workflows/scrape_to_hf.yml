@@ -12,8 +12,8 @@ on:
         type: choice
         options:
           - nationale_assemblee_scraper_to_hf.py
+          - sris_scrape_upload_hf.py
           - sru_scraper.py
-          - "SRIS scraper.py"
 
 jobs:
   scrape-and-upload:

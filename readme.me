@@ -1,0 +1,48 @@
+# Nationale Assemblee Wetten Scraper
+
+This repository provides small Python scripts to download Surinamese legislation PDFs and optionally push them to the Hugging Face Hub or Google Drive.
+
+## Overview
+
+- `nationale_assemblee_scraper_to_hf.py` crawls the Surinamese National Assembly website, collects PDF files, converts them to plain text with `pdftotext` and uploads the resulting dataset to Hugging Face.
+- `sru_scraper.py` recursively downloads PDFs from the same site without uploading.
+- `sris_scraper.py` downloads legislation PDFs from the Suriname Rechtsinstituut for several legal categories.
+- `upload_to_drive.py` uploads a zipped folder of PDFs to Google Drive using PyDrive.
+
+## Installation
+
+Python 3.8 or newer is recommended. Install the Python dependencies with
+
+```bash
+pip install -r requirements.txt
+```
+
+`pdftotext` from the `poppler-utils` package must be available on your system for text extraction. On Debian/Ubuntu you can install it with:
+
+```bash
+sudo apt-get install poppler-utils
+```
+
+## Usage
+
+Set the `HF_TOKEN` environment variable if you plan to upload to Hugging Face. Then run:
+
+```bash
+python nationale_assemblee_scraper_to_hf.py
+```
+
+The script downloads PDFs to `downloaded_pdfs/`, extracts text and uploads `data/latest.parquet` to the dataset configured inside the script.
+
+Other utilities can be executed directly:
+
+```bash
+python sru_scraper.py     # Download PDFs from dna.sr
+python sris_scraper.py    # Download PDFs from sris.sr
+python upload_to_drive.py # Upload clean_pdfs.zip to Google Drive
+```
+
+Each script prints progress information while running.
+
+## License
+
+No license file is present in this repository.

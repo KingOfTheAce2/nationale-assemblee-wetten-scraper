@@ -1,8 +1,11 @@
 import os
+import subprocess
+from io import BytesIO
+
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
-import subprocess
+from pdfminer.high_level import extract_text as pdfminer_extract_text
 from datasets import Dataset
 from huggingface_hub import HfApi
 
@@ -29,18 +32,35 @@ def is_internal_link(href: str) -> bool:
 
 
 def convert_pdf_to_text(pdf_bytes: bytes) -> str:
-    """Convert PDF bytes to text using pdftotext."""
+    """Convert PDF bytes to text.
+
+    The function first tries ``pdftotext`` and falls back to ``pdfminer.six`` if
+    no text was extracted. This helps catch cases where ``pdftotext`` fails even
+    though the PDF contains selectable text.
+    """
+
+    text = ""
+
     try:
         proc = subprocess.run(
             ["pdftotext", "-q", "-", "-"],
             input=pdf_bytes,
             capture_output=True,
-            check=True
+            check=True,
         )
-        return proc.stdout.decode('utf-8', errors='ignore')
+        text = proc.stdout.decode("utf-8", errors="ignore")
     except Exception as e:
-        print(f"Failed to convert PDF: {e}")
-        return ""
+        print(f"pdftotext failed: {e}")
+
+    if not text.strip():
+        try:
+            text = pdfminer_extract_text(BytesIO(pdf_bytes))
+            if text.strip():
+                print("Extracted text using pdfminer fallback")
+        except Exception as e:
+            print(f"pdfminer fallback failed: {e}")
+
+    return text
 
 
 def download_and_extract(pdf_url: str) -> None:
@@ -55,11 +75,20 @@ def download_and_extract(pdf_url: str) -> None:
         except requests.RequestException as e:
             print(f"Failed to download {pdf_url}: {e}")
             return
-        with open(filepath, 'wb') as f:
-            f.write(resp.content)
+
+        pdf_data = resp.content
+        if not pdf_data.startswith(b"%PDF"):
+            ct = resp.headers.get("Content-Type", "")
+            print(
+                f"Skipping {pdf_url} - content does not look like PDF (content-type: {ct})"
+            )
+            return
+
+        with open(filepath, "wb") as f:
+            f.write(pdf_data)
         print(f"Downloaded: {filename}")
-    # Convert
-    with open(filepath, 'rb') as f:
+
+    with open(filepath, "rb") as f:
         text = convert_pdf_to_text(f.read())
     if text.strip():
         docs.append({
